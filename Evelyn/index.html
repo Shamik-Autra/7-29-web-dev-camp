@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Evelyn's Portfolio</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <style>
+        .bg-main {
+            background-color: #add8e6;
+            background-image: url('https://source.unsplash.com/random/1920x1080?kitten,sushi,white');
+            background-repeat: no-repeat;
+            background-size: cover;
+            background-attachment: fixed;
+        }
+    </style>
+</head>
+
+<body class="bg-main text-gray-800">
+    <header class="bg-white shadow-md py-4">
+        <div class="container mx-auto flex justify-between items-center">
+            <h1 class="text-2xl font-bold">Evelyn's Portfolio</h1>
+            <nav>
+                <ul class="flex space-x-4">
+                    <li><a href="#about" class="text-blue-600 hover:underline">About</a></li>
+                    <li><a href="#hobbies" class="text-blue-600 hover:underline">Hobbies</a></li>
+                    <li><a href="#projects" class="text-blue-600 hover:underline">Projects</a></li>
+                    <li><a href="#contact" class="text-blue-600 hover:underline">Contact</a></li>
+                </ul>
+            </nav>
+        </div>
+    </header>
+
+    <main class="container mx-auto p-6">
+        <section id="about" class="my-8">
+            <h2 class="text-3xl font-bold mb-4">About Me</h2>
+            <p class="mb-4"><strong>Name:</strong> Evelyn</p>
+            <p class="mb-4"><strong>About me:</strong> Love kittens, Hate spiders (fear of spiders too), and love sushi!</p>
+            <p class="mb-4"><strong>Favorite Foods:</strong> MANGOO!</p>
+        </section>
+
+        <section id="hobbies" class="my-8">
+            <h2 class="text-3xl font-bold mb-4">Hobbies</h2>
+            <p class="mb-4"><strong>Hobbies / Things I like to do for fun:</strong> Play on my iPad, draw, and hang out with my friends!</p>
+            <p class="mb-4"><strong>Sports/Activities I do outside of school:</strong> Dunno…</p>
+        </section>
+
+        <section id="projects" class="my-8">
+            <h2 class="text-3xl font-bold mb-4">Projects</h2>
+            <p class="mb-4"><strong>Projects (awesome things I have created):</strong> Art</p>
+            <div class="grid grid-cols-2 gap-6">
+                <!-- Example project -->
+                <div class="bg-white p-4 rounded shadow">
+                    <h3 class="text-2xl font-bold mb-2">Art Project 1</h3>
+                    <p>Details about the art project, materials used, inspiration, etc.</p>
+                </div>
+                <div class="bg-white p-4 rounded shadow">
+                    <h3 class="text-2xl font-bold mb-2">Art Project 2</h3>
+                    <p>Details about another art project.</p>
+                </div>
+            </div>
+        </section>
+
+        <section id="contact" class="my-8">
+            <h2 class="text-3xl font-bold mb-4">Contact Me</h2>
+            <form action="#" method="post" class="bg-white p-6 rounded shadow-md">
+                <div class="mb-4">
+                    <label for="name" class="block text-gray-700">Name</label>
+                    <input type="text" id="name" name="name" class="w-full border border-gray-300 p-2 rounded" required>
+                </div>
+                <div class="mb-4">
+                    <label for="email" class="block text-gray-700">Email</label>
+                    <input type="email" id="email" name="email" class="w-full border border-gray-300 p-2 rounded" required>
+                </div>
+                <div class="mb-4">
+                    <label for="message" class="block text-gray-700">Message</label>
+                    <textarea id="message" name="message" class="w-full border border-gray-300 p-2 rounded" rows="5" required></textarea>
+                </div>
+                <button type="submit" class="bg-blue-500 text-white px-4 py-2 rounded">Send</button>
+            </form>
+        </section>
+    </main>
+
+    <footer class="bg-white shadow-md py-4">
+        <div class="container mx-auto text-center">
+            <p>&copy; 2024 Evelyn. All rights reserved.</p>
+        </div>
+    </footer>
+
+    <script>
+        // Basic JavaScript setup for future enhancements like pop-ups and dropdowns
+        document.addEventListener('DOMContentLoaded', () => {
+            console.log('Portfolio site ready for enhancements!');
+        });
+    </script>
+</body>
+
+</html>
