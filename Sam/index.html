@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sam's Portfolio</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <style>
+        /* Custom CSS for night sky background */
+        body {
+            background: linear-gradient(to bottom, #0f2027, #203a43, #2c5364);
+            color: white;
+            position: relative;
+            overflow: hidden;
+        }
+        .stars, .planets {
+            position: absolute;
+            border-radius: 50%;
+            background: white;
+        }
+        .stars {
+            width: 2px;
+            height: 2px;
+            box-shadow: 
+                0 0 2px white,
+                50px 50px 2px white,
+                100px 100px 2px white,
+                150px 150px 2px white,
+                200px 200px 2px white,
+                250px 250px 2px white,
+                300px 300px 2px white,
+                350px 350px 2px white,
+                400px 400px 2px white,
+                450px 450px 2px white;
+        }
+        .planets {
+            background: radial-gradient(circle, #ffcc99, #ff9966);
+            box-shadow: 
+                200px 100px 0 -30px rgba(255, 204, 153, 0.7),
+                300px 150px 0 -30px rgba(255, 153, 102, 0.7),
+                500px 200px 0 -30px rgba(204, 102, 102, 0.7);
+            width: 30px;
+            height: 30px;
+        }
+    </style>
+    <script>
+        // Basic JavaScript setup for future enhancements
+        document.addEventListener('DOMContentLoaded', () => {
+            console.log("Portfolio site ready for enhancements!");
+            // Add event listeners or other JS functionalities here
+        });
+    </script>
+</head>
+<body class="relative">
+
+    <!-- Stars and Planets -->
+    <div class="stars"></div>
+    <div class="planets"></div>
+
+    <!-- Header -->
+    <header class="bg-green-600 text-white py-4 relative z-10">
+        <div class="container mx-auto flex justify-between items-center px-6">
+            <h1 class="text-3xl font-bold">Sam's Portfolio</h1>
+            <nav>
+                <ul class="flex space-x-6">
+                    <li><a href="#about" class="hover:underline">About</a></li>
+                    <li><a href="#hobbies" class="hover:underline">Hobbies</a></li>
+                    <li><a href="#projects" class="hover:underline">Projects</a></li>
+                </ul>
+            </nav>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="container mx-auto px-6 py-10 relative z-10">
+        <!-- Biography Section -->
+        <section id="about" class="mb-12">
+            <h2 class="text-4xl font-bold mb-4">About Me</h2>
+            <div class="flex items-center space-x-4">
+                <img src="profile.jpg" alt="Profile Picture" class="w-24 h-24 rounded-full">
+                <p class="text-lg">Hi! I'm Sam, a 12-year-old student going into 7th grade. I love learning new things and sharing my projects. Welcome to my portfolio!</p>
+            </div>
+        </section>
+
+        <!-- Hobbies Section -->
+        <section id="hobbies" class="mb-12">
+            <h2 class="text-4xl font-bold mb-4">Hobbies</h2>
+            <p class="text-lg">In my free time, I enjoy reading and creating things, especially with Legos. I also love swimming and playing soccer.</p>
+        </section>
+
+        <!-- Projects Section -->
+        <section id="projects" class="mb-12">
+            <h2 class="text-4xl font-bold mb-4">Projects</h2>
+            <p class="text-lg">Here are some of my recent creations:</p>
+            <ul class="list-disc list-inside ml-4">
+                <li>White House</li>
+                <li>Statue of Liberty</li>
+                <li>Great Pyramid of Giza</li>
+                <li>Taj Mahal</li>
+            </ul>
+        </section>
+    </main>
+
+    <!-- Footer -->
+    <footer class="bg-gray-800 text-white py-6 relative z-10">
+        <div class="container mx-auto text-center">
+            <p>&copy; 2024 Sam's Portfolio. All rights reserved.</p>
+        </div>
+    </footer>
+
+</body>
+</html>
