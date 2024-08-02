@@ -1,0 +1,270 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Balanced 3D Space Game</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <style>
+        body { margin: 0; overflow: hidden; }
+        canvas { display: block; }
+        #healthBar { position: absolute; top: 10px; left: 10px; width: 200px; height: 20px; background: #333; }
+        #health { width: 100%; height: 100%; background: #0f0; transition: width 0.3s; }
+        #enemyHealthBar { position: absolute; top: 10px; right: 10px; width: 200px; height: 20px; background: #333; }
+        #enemyHealth { width: 100%; height: 100%; background: #f00; transition: width 0.3s; }
+        #gameOver { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); font-size: 48px; color: #fff; display: none; }
+    </style>
+</head>
+<body>
+    <div id="healthBar"><div id="health"></div></div>
+    <div id="enemyHealthBar"><div id="enemyHealth"></div></div>
+    <div id="gameOver"></div>
+    <script>
+        const scene = new THREE.Scene();
+        const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+        const renderer = new THREE.WebGLRenderer();
+        renderer.setSize(window.innerWidth, window.innerHeight);
+        document.body.appendChild(renderer.domElement);
+
+        scene.add(new THREE.AmbientLight(0x404040));
+        const directionalLight = new THREE.DirectionalLight(0xffffff, 0.5);
+        directionalLight.position.set(1, 1, 1);
+        scene.add(directionalLight);
+
+        // Larger spaceship model
+        const spaceshipGeometry = new THREE.Group();
+        const bodyGeometry = new THREE.ConeGeometry(2, 8, 32);
+        const bodyMaterial = new THREE.MeshPhongMaterial({ color: 0x00ff00 });
+        const body = new THREE.Mesh(bodyGeometry, bodyMaterial);
+        body.rotation.x = Math.PI / 2;
+        spaceshipGeometry.add(body);
+
+        const wingGeometry = new THREE.BoxGeometry(6, 0.4, 2);
+        const wingMaterial = new THREE.MeshPhongMaterial({ color: 0x008800 });
+        const leftWing = new THREE.Mesh(wingGeometry, wingMaterial);
+        leftWing.position.set(-3, 0, -2);
+        spaceshipGeometry.add(leftWing);
+
+        const rightWing = leftWing.clone();
+        rightWing.position.set(3, 0, -2);
+        spaceshipGeometry.add(rightWing);
+
+        const spaceship = spaceshipGeometry;
+        scene.add(spaceship);
+
+        // Larger enemy model
+        const enemyGeometry = new THREE.Group();
+        const enemyBodyGeometry = new THREE.ConeGeometry(2, 8, 32);
+        const enemyBodyMaterial = new THREE.MeshPhongMaterial({ color: 0xff0000 });
+        const enemyBody = new THREE.Mesh(enemyBodyGeometry, enemyBodyMaterial);
+        enemyBody.rotation.x = -Math.PI / 2;
+        enemyGeometry.add(enemyBody);
+
+        const enemyWingGeometry = new THREE.BoxGeometry(6, 0.4, 2);
+        const enemyWingMaterial = new THREE.MeshPhongMaterial({ color: 0x880000 });
+        const enemyLeftWing = new THREE.Mesh(enemyWingGeometry, enemyWingMaterial);
+        enemyLeftWing.position.set(-3, 0, 2);
+        enemyGeometry.add(enemyLeftWing);
+
+        const enemyRightWing = enemyLeftWing.clone();
+        enemyRightWing.position.set(3, 0, 2);
+        enemyGeometry.add(enemyRightWing);
+
+        const enemy = enemyGeometry;
+        enemy.position.set(0, 0, -50);
+        scene.add(enemy);
+
+        function createBuilding(x, z) {
+            const height = Math.random() * 50 + 10;
+            const geometry = new THREE.BoxGeometry(10, height, 10);
+            const material = new THREE.MeshPhongMaterial({ color: 0x808080 });
+            const building = new THREE.Mesh(geometry, material);
+            building.position.set(x, height / 2 - 5, z);
+            scene.add(building);
+        }
+
+        for (let x = -200; x <= 200; x += 20) {
+            for (let z = -200; z <= 200; z += 20) {
+                if (Math.random() > 0.7) createBuilding(x, z);
+            }
+        }
+
+        const planeGeometry = new THREE.PlaneGeometry(2000, 2000);
+        const planeMaterial = new THREE.MeshPhongMaterial({ color: 0x1a5f7a });
+        const ground = new THREE.Mesh(planeGeometry, planeMaterial);
+        ground.rotation.x = -Math.PI / 2;
+        ground.position.y = -5;
+        scene.add(ground);
+
+        const keys = {};
+        document.addEventListener('keydown', (event) => keys[event.key.toLowerCase()] = true);
+        document.addEventListener('keyup', (event) => keys[event.key.toLowerCase()] = false);
+
+        let spaceshipHealth = 100;
+        let enemyHealth = 100;
+
+        function updateHealthBars() {
+            document.getElementById('health').style.width = `${spaceshipHealth}%`;
+            document.getElementById('enemyHealth').style.width = `${enemyHealth}%`;
+        }
+
+        function shoot(shooter, target) {
+            const laserGeometry = new THREE.CylinderGeometry(0.2, 0.2, 100, 8);
+            laserGeometry.rotateX(Math.PI / 2);
+            const laserMaterial = new THREE.MeshBasicMaterial({ color: shooter === spaceship ? 0x00ff00 : 0xff0000 });
+            const laser = new THREE.Mesh(laserGeometry, laserMaterial);
+            
+            const shooterDirection = new THREE.Vector3(0, 0, -1).applyQuaternion(shooter.quaternion);
+            const nosePosition = shooter.position.clone().add(shooterDirection.multiplyScalar(4));
+            laser.position.copy(nosePosition);
+            
+            laser.quaternion.copy(shooter.quaternion);
+            scene.add(laser);
+
+            const raycaster = new THREE.Raycaster(nosePosition, shooterDirection);
+
+            setTimeout(() => {
+                scene.remove(laser);
+                const intersects = raycaster.intersectObject(target, true);
+                if (intersects.length > 0 && intersects[0].distance < 100) {
+                    if (target === enemy) {
+                        enemyHealth -= 10;
+                    } else {
+                        spaceshipHealth -= 5;
+                    }
+                    updateHealthBars();
+                    if (spaceshipHealth <= 0 || enemyHealth <= 0) {
+                        endGame();
+                    }
+                }
+            }, 200);
+        }
+
+        function endGame() {
+            const gameOverText = spaceshipHealth <= 0 ? "You Lost!" : "You Won!";
+            document.getElementById('gameOver').textContent = gameOverText;
+            document.getElementById('gameOver').style.display = 'block';
+            if (spaceshipHealth <= 0) {
+                explode(spaceship);
+            } else {
+                explode(enemy);
+            }
+        }
+
+        function explode(object) {
+            const particleCount = 1000;
+            const geometry = new THREE.BufferGeometry();
+            const positions = new Float32Array(particleCount * 3);
+
+            for (let i = 0; i < particleCount * 3; i += 3) {
+                positions[i] = object.position.x + (Math.random() - 0.5) * 20;
+                positions[i + 1] = object.position.y + (Math.random() - 0.5) * 20;
+                positions[i + 2] = object.position.z + (Math.random() - 0.5) * 20;
+            }
+
+            geometry.setAttribute('position', new THREE.BufferAttribute(positions, 3));
+            const material = new THREE.PointsMaterial({ color: 0xffff00, size: 0.2 });
+            const particles = new THREE.Points(geometry, material);
+            scene.add(particles);
+
+            scene.remove(object);
+        }
+
+        let lastEnemyShot = 0;
+
+        let pitch = 0;
+        let yaw = 0;
+        const mouseSensitivity = 0.002;
+        const maxPitch = Math.PI / 4;
+
+        renderer.domElement.addEventListener('click', () => {
+            renderer.domElement.requestPointerLock();
+        });
+
+        document.addEventListener('mousemove', (event) => {
+            if (document.pointerLockElement === renderer.domElement) {
+                yaw -= event.movementX * mouseSensitivity;
+                pitch -= event.movementY * mouseSensitivity;
+                pitch = Math.max(-maxPitch, Math.min(maxPitch, pitch));
+            }
+        });
+
+        // Left mouse click to shoot
+        document.addEventListener('mousedown', (event) => {
+            if (event.button === 0) { // Left mouse button
+                shoot(spaceship, enemy);
+            }
+        });
+
+        const enemyPath = [];
+        for (let i = 0; i < 10; i++) {
+            enemyPath.push(new THREE.Vector3(
+                Math.random() * 400 - 200,
+                Math.random() * 50 + 10,
+                Math.random() * 400 - 200
+            ));
+        }
+        let enemyPathIndex = 0;
+        let enemyT = 0;
+
+        // Third-person camera setup
+        const cameraOffset = new THREE.Vector3(0, 10, 30);
+        const cameraLookAtOffset = new THREE.Vector3(0, 0, -20);
+
+        function animate() {
+            requestAnimationFrame(animate);
+
+            spaceship.rotation.y = yaw;
+            spaceship.rotation.x = pitch;
+
+            const moveDirection = new THREE.Vector3(0, 0, -1);
+            moveDirection.applyQuaternion(spaceship.quaternion);
+            moveDirection.normalize();
+
+            const speed = 0.5;
+            if (keys['w']) spaceship.position.add(moveDirection.multiplyScalar(speed));
+            if (keys['s']) spaceship.position.sub(moveDirection.multiplyScalar(speed));
+            if (keys['a']) spaceship.position.add(new THREE.Vector3(-moveDirection.z, 0, moveDirection.x).multiplyScalar(speed));
+            if (keys['d']) spaceship.position.add(new THREE.Vector3(moveDirection.z, 0, -moveDirection.x).multiplyScalar(speed));
+
+            // Update camera position for third-person view
+            const cameraIdealPosition = spaceship.position.clone().add(cameraOffset.clone().applyQuaternion(spaceship.quaternion));
+            camera.position.lerp(cameraIdealPosition, 0.1);
+            
+            const lookAtPosition = spaceship.position.clone().add(cameraLookAtOffset.clone().applyQuaternion(spaceship.quaternion));
+            camera.lookAt(lookAtPosition);
+
+            enemyT += 0.003; // Slower enemy movement
+            if (enemyT >= 1) {
+                enemyT = 0;
+                enemyPathIndex = (enemyPathIndex + 1) % enemyPath.length;
+            }
+            const start = enemyPath[enemyPathIndex];
+            const end = enemyPath[(enemyPathIndex + 1) % enemyPath.length];
+            enemy.position.lerpVectors(start, end, enemyT);
+
+            const now = Date.now();
+            if (now - lastEnemyShot > 3000) { // Less frequent enemy shots
+                const toPlayer = new THREE.Vector3().subVectors(spaceship.position, enemy.position);
+                const randomOffset = new THREE.Vector3(Math.random() - 0.5, Math.random() - 0.5, Math.random() - 0.5).multiplyScalar(10);
+                toPlayer.add(randomOffset).normalize();
+                enemy.quaternion.setFromUnitVectors(new THREE.Vector3(0, 0, 1), toPlayer);
+                shoot(enemy, spaceship);
+                lastEnemyShot = now;
+            }
+
+            renderer.render(scene, camera);
+        }
+
+        animate();
+
+        window.addEventListener('resize', () => {
+            camera.aspect = window.innerWidth / window.innerHeight;
+            camera.updateProjectionMatrix();
+            renderer.setSize(window.innerWidth, window.innerHeight);
+        });
+
+        updateHealthBars();
+    </script>
+</body>
+</html>

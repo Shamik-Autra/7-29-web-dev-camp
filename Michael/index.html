@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Michael's Professional Portfolio</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <script>
+        document.addEventListener('DOMContentLoaded', (event) => {
+            console.log('Page loaded and ready!');
+            // Check local storage for dark mode preference
+            if (localStorage.getItem('dark-mode') === 'true') {
+                document.body.classList.add('dark');
+            }
+        });
+
+        function toggleDarkMode() {
+            const body = document.body;
+            body.classList.toggle('dark');
+            // Store the user's preference in local storage
+            localStorage.setItem('dark-mode', body.classList.contains('dark'));
+        }
+
+        function addTask() {
+            var taskInput = document.getElementById("taskInput");
+            var taskList = document.getElementById("taskList");
+
+            if (taskInput.value.trim() !== "") {
+                var listItem = document.createElement("li");
+                listItem.className = "flex justify-between items-center bg-gray-200 p-2 rounded-lg mb-2 dark:bg-gray-800 dark:text-white";
+                listItem.innerHTML = `
+                    <span>${taskInput.value}</span>
+                    <button onclick="removeTask(this)" class="text-red-600 hover:underline dark:text-red-400">Remove</button>
+                `;
+                taskList.appendChild(listItem);
+                taskInput.value = "";
+            }
+        }
+
+        function removeTask(taskButton) {
+            taskButton.parentElement.remove();
+        }
+    </script>
+    <style>
+        .dark .bg-white { background-color: #1a202c; }
+        .dark .text-black { color: #edf2f7; }
+        .dark .bg-blue-900 { background-color: #2a4365; }
+        .dark .text-white { color: #a0aec0; }
+        .dark .bg-gray-100 { background-color: #2d3748; }
+        .dark .bg-gray-200 { background-color: #4a5568; }
+    </style>
+</head>
+
+<body class="bg-gray-100 font-sans leading-normal tracking-normal">
+    <!-- Header -->
+    <header class="bg-blue-900 text-white p-4 shadow-lg">
+        <div class="container mx-auto flex justify-between items-center">
+            <div class="text-3xl font-bold">Michael's Portfolio</div>
+            <nav>
+                <ul class="flex space-x-4">
+                    <li><a href="#bio" class="hover:underline">Biography</a></li>
+                    <li><a href="#hobbies" class="hover:underline">Hobbies</a></li>
+                    <li><a href="#projects" class="hover:underline">Projects</a></li>
+                    <li><a href="#contact" class="hover:underline">Contact</a></li>
+                    <li><a href="#todo" class="hover:underline">To-Do List</a></li>
+                </ul>
+            </nav>
+            <button onclick="toggleDarkMode()" class="bg-gray-200 dark:bg-gray-700 text-black dark:text-white px-4 py-2 rounded-lg ml-4">Toggle Dark Mode</button>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="container mx-auto my-8 p-4">
+        <!-- Biography Section -->
+        <section id="bio" class="bg-white p-6 rounded-lg shadow-lg mb-8">
+            <h2 class="text-2xl font-bold mb-4">Biography</h2>
+            <p>I'm Michael, a 10-year-old student currently in the 5th grade. Born in 2014, I'm passionate about learning and exploring new activities. I love pizza, especially New York style, and enjoy playing chess, basketball, football, and badminton.</p>
+        </section>
+
+        <!-- Hobbies Section -->
+        <section id="hobbies" class="bg-white p-6 rounded-lg shadow-lg mb-8">
+            <h2 class="text-2xl font-bold mb-4">Hobbies</h2>
+            <ul class="list-disc ml-5">
+                <li>Playing chess</li>
+                <li>Basketball</li>
+                <li>Football</li>
+                <li>Badminton</li>
+            </ul>
+        </section>
+
+        <!-- Projects Section -->
+        <section id="projects" class="bg-white p-6 rounded-lg shadow-lg mb-8">
+            <h2 class="text-2xl font-bold mb-4">Projects</h2>
+            <p>Currently, I haven't created any notable projects, but I love exploring my interests in Spiderman and Star Wars. I'm also a fan of delicious treats like Twix and Gummies.</p>
+        </section>
+
+        <!-- To-Do List Section -->
+        <section id="todo" class="bg-white p-6 rounded-lg shadow-lg mb-8">
+            <h2 class="text-2xl font-bold mb-4">To-Do List</h2>
+            <div class="mb-4">
+                <input id="taskInput" type="text" class="w-full p-2 border rounded-lg" placeholder="Add a new task">
+                <button onclick="addTask()" class="mt-2 bg-blue-900 text-white px-4 py-2 rounded-lg">Add Task</button>
+            </div>
+            <ul id="taskList" class="list-none pl-0">
+                <!-- Task items will appear here -->
+            </ul>
+        </section>
+
+        <!-- Contact Form -->
+        <section id="contact" class="bg-white p-6 rounded-lg shadow-lg mb-8">
+            <h2 class="text-2xl font-bold mb-4">Contact Me</h2>
+            <form action="#" method="POST" class="space-y-4">
+                <div>
+                    <label for="name" class="block text-sm font-medium">Name</label>
+                    <input type="text" id="name" name="name" class="w-full p-2 border rounded-lg" required>
+                </div>
+                <div>
+                    <label for="email" class="block text-sm font-medium">Email</label>
+                    <input type="email" id="email" name="email" class="w-full p-2 border rounded-lg" required>
+                </div>
+                <div>
+                    <label for="message" class="block text-sm font-medium">Message</label>
+                    <textarea id="message" name="message" rows="4" class="w-full p-2 border rounded-lg" required></textarea>
+                </div>
+                <div>
+                    <button type="submit" class="bg-blue-900 text-white px-4 py-2 rounded-lg">Send Message</button>
+                </div>
+            </form>
+        </section>
+    </main>
+
+    <!-- Footer -->
+    <footer class="bg-blue-900 text-white p-4">
+        <div class="container mx-auto text-center">
+            <p>&copy; 2024 Michael's Portfolio. All rights reserved.</p>
+        </div>
+    </footer>
+</body>
+
+</html>

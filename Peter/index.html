@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Peter's Portfolio</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <style>
+        body.dark-mode {
+            background-color: #1a202c;
+            color: #cbd5e0;
+        }
+        .dark-mode header,
+        .dark-mode footer {
+            background-color: #2d3748;
+        }
+        .dark-mode .text-blue-600 {
+            color: #63b3ed;
+        }
+        .dark-mode .bg-white {
+            background-color: #2d3748;
+        }
+        .dark-mode .border-gray-300 {
+            border-color: #4a5568;
+        }
+    </style>
+    <script>
+        // Check and apply dark mode preference
+        document.addEventListener('DOMContentLoaded', function () {
+            if (localStorage.getItem('darkMode') === 'enabled') {
+                document.body.classList.add('dark-mode');
+            }
+        });
+
+        // Toggle dark mode function
+        function toggleDarkMode() {
+            document.body.classList.toggle('dark-mode');
+            if (document.body.classList.contains('dark-mode')) {
+                localStorage.setItem('darkMode', 'enabled');
+            } else {
+                localStorage.setItem('darkMode', 'disabled');
+            }
+        }
+
+        // Add task to the to-do list
+        function addTask() {
+            const taskInput = document.getElementById('taskInput');
+            const taskList = document.getElementById('taskList');
+            const taskValue = taskInput.value.trim();
+
+            if (taskValue) {
+                const li = document.createElement('li');
+                li.className = "flex justify-between items-center p-2 border-b border-gray-300";
+                li.innerHTML = `
+                    <span>${taskValue}</span>
+                    <button onclick="removeTask(this)" class="bg-red-500 text-white px-2 py-1 rounded">Remove</button>
+                `;
+                taskList.appendChild(li);
+                taskInput.value = '';
+            }
+        }
+
+        // Remove task from the to-do list
+        function removeTask(button) {
+            button.parentElement.remove();
+        }
+    </script>
+</head>
+<body class="bg-gray-100 font-sans leading-normal tracking-normal">
+    <header class="bg-blue-600 text-white">
+        <div class="container mx-auto p-6 flex justify-between items-center">
+            <h1 class="text-4xl font-bold">陆文泰 - Peter</h1>
+            <button onclick="toggleDarkMode()" class="bg-white text-black p-2 rounded">Toggle Dark Mode</button>
+            <nav>
+                <ul class="flex space-x-6">
+                    <li><a href="#about" class="hover:text-gray-300">About Me</a></li>
+                    <li><a href="#hobbies" class="hover:text-gray-300">Hobbies</a></li>
+                    <li><a href="#projects" class="hover:text-gray-300">Projects</a></li>
+                    <li><a href="#todo" class="hover:text-gray-300">To-Do List</a></li>
+                    <li><a href="#contact" class="hover:text-gray-300">Contact</a></li>
+                </ul>
+            </nav>
+        </div>
+    </header>
+
+    <main class="container mx-auto mt-6 p-6 bg-white rounded-lg shadow-md">
+        <section id="about" class="mb-6">
+            <h2 class="text-3xl font-bold text-blue-600">About Me</h2>
+            <div class="flex items-center">
+                <img src="profile.jpg" alt="Profile Picture" class="w-32 h-32 rounded-full mr-4">
+                <p class="text-xl mt-2">I'm Peter, also known by my Chinese name 陆文泰. I am from Shanghai, Yangpu. My favorite foods are apples and noodles. I enjoy reading books and watching TV in my free time. Additionally, I love playing sports such as football, badminton, and tennis.</p>
+            </div>
+        </section>
+
+        <section id="hobbies" class="mb-6">
+            <h2 class="text-3xl font-bold text-blue-600">Hobbies</h2>
+            <p class="text-xl mt-2">I like to do a variety of activities, including reading books, watching TV, and engaging in outdoor sports. These hobbies help me relax and enjoy life.</p>
+        </section>
+
+        <section id="projects" class="mb-6">
+            <h2 class="text-3xl font-bold text-blue-600">Projects</h2>
+            <p class="text-xl mt-2">This section will showcase my professional and personal projects. Check back soon for updates!</p>
+        </section>
+
+        <section id="todo" class="mb-6">
+            <h2 class="text-3xl font-bold text-blue-600">To-Do List</h2>
+            <div class="mt-4">
+                <input type="text" id="taskInput" class="w-full p-2 border border-gray-300 rounded mb-2" placeholder="New Task">
+                <button onclick="addTask()" class="bg-green-500 text-white p-2 rounded">Add Task</button>
+            </div>
+            <ul id="taskList" class="mt-4 list-disc list-inside">
+                <!-- To-do items will be added here -->
+            </ul>
+        </section>
+
+        <section id="contact" class="mb-6">
+            <h2 class="text-3xl font-bold text-blue-600">Contact Me</h2>
+            <form class="mt-4">
+                <div class="mb-4">
+                    <label for="name" class="block text-xl font-bold">Name</label>
+                    <input type="text" id="name" class="w-full p-2 border border-gray-300 rounded" required>
+                </div>
+                <div class="mb-4">
+                    <label for="email" class="block text-xl font-bold">Email</label>
+                    <input type="email" id="email" class="w-full p-2 border border-gray-300 rounded" required>
+                </div>
+                <div class="mb-4">
+                    <label for="message" class="block text-xl font-bold">Message</label>
+                    <textarea id="message" class="w-full p-2 border border-gray-300 rounded" rows="4" required></textarea>
+                </div>
+                <button type="submit" class="bg-blue-600 text-white p-2 rounded" onclick="showAlert()">Submit</button>
+            </form>
+        </section>
+    </main>
+
+    <footer class="bg-blue-600 p-4 text-white text-center">
+        <p>&copy; 2024 Peter's Portfolio. All rights reserved.</p>
+    </footer>
+</body>
+</html>

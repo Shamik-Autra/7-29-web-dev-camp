@@ -1,0 +1,531 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Brawl Stars Inspired Game</title>
+    <style>
+        body {
+            margin: 0;
+            overflow: hidden;
+            background-color: #f0f0f0;
+            font-family: Arial, sans-serif;
+        }
+        #gameCanvas {
+            border: 1px solid black;
+        }
+        #characterSelection {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background-color: rgba(0, 0, 0, 0.8);
+            padding: 20px;
+            border-radius: 10px;
+            color: white;
+            text-align: center;
+        }
+        .character {
+            display: inline-block;
+            margin: 10px;
+            padding: 10px;
+            border: 2px solid white;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        .character:hover {
+            background-color: rgba(255, 255, 255, 0.2);
+        }
+    </style>
+</head>
+<body>
+    <canvas id="gameCanvas"></canvas>
+    <div id="characterSelection" style="display: none;">
+        <h2>Select Your Character</h2>
+        <div id="characterList"></div>
+    </div>
+    <script>
+        // Game variables
+        let canvas, ctx;
+        let player = { x: 400, y: 300, size: 30, speed: 5, health: 100, visible: true };
+        let keys = {};
+        let bullets = [];
+        let enemies = [];
+        let obstacles = [];
+        let grassAreas = [];
+        let lastShot = 0;
+        let camera = { x: 0, y: 0 };
+        let mapWidth = 3000;
+        let mapHeight = 2000;
+        let gameOver = false;
+        let gameStarted = false;
+
+        // Character definitions
+        const characters = [
+            {
+                name: "Blue Circle",
+                color: "blue",
+                abilities: [
+                    { name: "Fast Shot", description: "Shoots bullets rapidly", cooldown: 300 },
+                    { name: "Speed Boost", description: "Temporarily increases movement speed", cooldown: 5000 }
+                ]
+            },
+            {
+                name: "Yellow Circle",
+                color: "yellow",
+                abilities: [
+                    { name: "Power Shot", description: "Shoots a larger, more damaging bullet", cooldown: 1000 },
+                    { name: "Shield", description: "Temporarily reduces incoming damage", cooldown: 8000 }
+                ]
+            }
+        ];
+
+        // Initialize the game
+        function init() {
+            canvas = document.getElementById('gameCanvas');
+            ctx = canvas.getContext('2d');
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+
+            // Event listeners
+            window.addEventListener('keydown', function(e) { keys[e.key] = true; });
+            window.addEventListener('keyup', function(e) { keys[e.key] = false; });
+            window.addEventListener('resize', function() {
+                canvas.width = window.innerWidth;
+                canvas.height = window.innerHeight;
+            });
+            canvas.addEventListener('click', handleClick);
+
+            showCharacterSelection();
+        }
+
+        function showCharacterSelection() {
+            const characterSelection = document.getElementById('characterSelection');
+            const characterList = document.getElementById('characterList');
+            characterSelection.style.display = 'block';
+
+            characters.forEach((character, index) => {
+                const charDiv = document.createElement('div');
+                charDiv.className = 'character';
+                charDiv.innerHTML = `
+                    <h3>${character.name}</h3>
+                    <p>Abilities:</p>
+                    <ul>
+                        ${character.abilities.map(ability => `<li>${ability.name}: ${ability.description}</li>`).join('')}
+                    </ul>
+                `;
+                charDiv.onclick = () => selectCharacter(index);
+                characterList.appendChild(charDiv);
+            });
+        }
+
+        function selectCharacter(index) {
+            player.character = characters[index];
+            player.color = player.character.color;
+            document.getElementById('characterSelection').style.display = 'none';
+            resetGame();
+        }
+
+        function resetGame() {
+            player = { 
+                ...player,
+                x: 400, 
+                y: 300, 
+                size: 30, 
+                speed: 5, 
+                health: 100, 
+                visible: true,
+                abilities: player.character.abilities.map(ability => ({ ...ability, lastUsed: 0 }))
+            };
+            bullets = [];
+            enemies = [];
+            obstacles = [];
+            grassAreas = [];
+            gameOver = false;
+            gameStarted = true;
+
+            // Create obstacles
+            for (let i = 0; i < 20; i++) {
+                obstacles.push({
+                    x: Math.random() * mapWidth,
+                    y: Math.random() * mapHeight,
+                    width: 50 + Math.random() * 50,
+                    height: 50 + Math.random() * 50
+                });
+            }
+
+            // Create grass areas
+            for (let i = 0; i < 15; i++) {
+                grassAreas.push({
+                    x: Math.random() * mapWidth,
+                    y: Math.random() * mapHeight,
+                    width: 100 + Math.random() * 200,
+                    height: 100 + Math.random() * 200
+                });
+            }
+
+            // Create enemies
+            for (let i = 0; i < 10; i++) {
+                enemies.push({
+                    x: Math.random() * mapWidth,
+                    y: Math.random() * mapHeight,
+                    size: 20,
+                    speed: 1 + Math.random(),
+                    health: 50,
+                    maxHealth: 50
+                });
+            }
+
+            // Start the game loop
+            gameLoop();
+        }
+
+        // Game loop
+        function gameLoop() {
+            update();
+            render();
+            if (!gameOver && gameStarted) {
+                requestAnimationFrame(gameLoop);
+            }
+        }
+
+        // Update game state
+        function update() {
+            if (!gameOver && gameStarted) {
+                updatePlayer();
+                updateCamera();
+                updateBullets();
+                updateEnemies();
+                checkCollisions();
+                checkPlayerVisibility();
+                checkGameOver();
+                updateAbilities();
+            }
+        }
+
+        function updatePlayer() {
+            let newX = player.x;
+            let newY = player.y;
+
+            if (keys['w']) newY -= player.speed;
+            if (keys['s']) newY += player.speed;
+            if (keys['a']) newX -= player.speed;
+            if (keys['d']) newX += player.speed;
+
+            if (!checkObstacleCollision(newX, newY)) {
+                player.x = newX;
+                player.y = newY;
+            }
+
+            // Keep player within map bounds
+            player.x = Math.max(player.size / 2, Math.min(mapWidth - player.size / 2, player.x));
+            player.y = Math.max(player.size / 2, Math.min(mapHeight - player.size / 2, player.y));
+        }
+
+        function updateCamera() {
+            camera.x = player.x - canvas.width / 2;
+            camera.y = player.y - canvas.height / 2;
+
+            // Keep camera within map bounds
+            camera.x = Math.max(0, Math.min(mapWidth - canvas.width, camera.x));
+            camera.y = Math.max(0, Math.min(mapHeight - canvas.height, camera.y));
+        }
+
+        function updateBullets() {
+            bullets.forEach((bullet, index) => {
+                bullet.x += bullet.dx;
+                bullet.y += bullet.dy;
+
+                // Remove bullets that are off-map
+                if (bullet.x < 0 || bullet.x > mapWidth || bullet.y < 0 || bullet.y > mapHeight) {
+                    bullets.splice(index, 1);
+                }
+            });
+        }
+
+        function updateEnemies() {
+            enemies.forEach(enemy => {
+                if (player.visible || distance(player, enemy) < 100) {
+                    let dx = player.x - enemy.x;
+                    let dy = player.y - enemy.y;
+                    let dist = Math.sqrt(dx * dx + dy * dy);
+
+                    enemy.x += (dx / dist) * enemy.speed;
+                    enemy.y += (dy / dist) * enemy.speed;
+                } else {
+                    // Random movement when player is not visible
+                    enemy.x += (Math.random() - 0.5) * enemy.speed;
+                    enemy.y += (Math.random() - 0.5) * enemy.speed;
+                }
+
+                // Keep enemies within map bounds
+                enemy.x = Math.max(enemy.size / 2, Math.min(mapWidth - enemy.size / 2, enemy.x));
+                enemy.y = Math.max(enemy.size / 2, Math.min(mapHeight - enemy.size / 2, enemy.y));
+            });
+        }
+
+        function checkCollisions() {
+            // Check bullet-enemy collisions
+            bullets.forEach((bullet, bulletIndex) => {
+                enemies.forEach((enemy, enemyIndex) => {
+                    if (distance(bullet, enemy) < enemy.size) {
+                        enemy.health -= bullet.damage || 10;
+                        bullets.splice(bulletIndex, 1);
+                        if (enemy.health <= 0) {
+                            enemies.splice(enemyIndex, 1);
+                            // Spawn a new enemy
+                            enemies.push({
+                                x: Math.random() * mapWidth,
+                                y: Math.random() * mapHeight,
+                                size: 20,
+                                speed: 1 + Math.random(),
+                                health: 50,
+                                maxHealth: 50
+                            });
+                        }
+                    }
+                });
+            });
+
+            // Check player-enemy collisions
+            enemies.forEach(enemy => {
+                if (distance(player, enemy) < (player.size + enemy.size) / 2) {
+                    player.health -= 0.5;
+                }
+            });
+        }
+
+        function checkPlayerVisibility() {
+            player.visible = !isPlayerInGrass();
+        }
+
+        function isPlayerInGrass() {
+            return grassAreas.some(grass => 
+                player.x > grass.x && 
+                player.x < grass.x + grass.width && 
+                player.y > grass.y && 
+                player.y < grass.y + grass.height
+            );
+        }
+
+        function checkObstacleCollision(x, y) {
+            return obstacles.some(obstacle => 
+                x - player.size/2 < obstacle.x + obstacle.width &&
+                x + player.size/2 > obstacle.x &&
+                y - player.size/2 < obstacle.y + obstacle.height &&
+                y + player.size/2 > obstacle.y
+            );
+        }
+
+        function distance(obj1, obj2) {
+            return Math.sqrt((obj1.x - obj2.x)**2 + (obj1.y - obj2.y)**2);
+        }
+
+        function checkGameOver() {
+            if (player.health <= 0) {
+                gameOver = true;
+            }
+        }
+
+        function handleClick(e) {
+            if (gameOver) {
+                showCharacterSelection();
+            } else if (gameStarted) {
+                shoot(e);
+            }
+        }
+
+        function shoot(e) {
+            if (isPlayerInGrass()) {
+                // Player can't shoot while in grass
+                return;
+            }
+
+            let now = Date.now();
+            let shootCooldown = player.character.name === "Blue Circle" ? 300 : 500; // Fast Shot for Blue Circle
+            if (now - lastShot > shootCooldown) {
+                let rect = canvas.getBoundingClientRect();
+                let targetX = e.clientX - rect.left + camera.x;
+                let targetY = e.clientY - rect.top + camera.y;
+
+                let dx = targetX - player.x;
+                let dy = targetY - player.y;
+                let distance = Math.sqrt(dx * dx + dy * dy);
+
+                let bulletSize = 5;
+                let bulletDamage = 10;
+
+                if (player.character.name === "Yellow Circle") {
+                    // Power Shot for Yellow Circle
+                    bulletSize = 10;
+                    bulletDamage = 20;
+                }
+
+                bullets.push({
+                    x: player.x,
+                    y: player.y,
+                    dx: (dx / distance) * 10,
+                    dy: (dy / distance) * 10,
+                    size: bulletSize,
+                    damage: bulletDamage
+                });
+
+                lastShot = now;
+            }
+        }
+
+        function updateAbilities() {
+            const now = Date.now();
+            player.abilities.forEach(ability => {
+                if (keys[ability.name[0].toLowerCase()] && now - ability.lastUsed > ability.cooldown) {
+                    useAbility(ability);
+                    ability.lastUsed = now;
+                }
+            });
+        }
+
+        function useAbility(ability) {
+            switch (ability.name) {
+                case "Speed Boost":
+                    player.speed *= 1.5;
+                    setTimeout(() => { player.speed /= 1.5; }, 3000);
+                    break;
+                case "Shield":
+                    player.shielded = true;
+                    setTimeout(() => { player.shielded = false; }, 5000);
+                    break;
+            }
+        }
+
+        // Render game objects
+        function render() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            ctx.save();
+            ctx.translate(-camera.x, -camera.y);
+            
+            // Draw grass areas
+            ctx.fillStyle = 'rgba(0, 128, 0, 0.5)';
+            grassAreas.forEach(grass => {
+                ctx.fillRect(grass.x, grass.y, grass.width, grass.height);
+            });
+
+            // Draw obstacles
+            ctx.fillStyle = 'gray';
+            obstacles.forEach(obstacle => {
+                ctx.fillRect(obstacle.x, obstacle.y, obstacle.width, obstacle.height);
+            });
+
+            // Draw enemies
+            enemies.forEach(enemy => {
+                ctx.fillStyle = 'red';
+                ctx.beginPath();
+                ctx.arc(enemy.x, enemy.y, enemy.size / 2, 0, Math.PI * 2);
+                ctx.fill();
+
+                // Draw enemy health bar
+                ctx.fillStyle = 'red';
+                ctx.fillRect(enemy.x - enemy.size / 2, enemy.y - enemy.size - 10, enemy.size, 5);
+                ctx.fillStyle = 'green';
+                ctx.fillRect(enemy.x - enemy.size / 2, enemy.y - enemy.size - 10, enemy.size * (enemy.health / enemy.maxHealth), 5);
+            });
+
+            // Draw bullets
+            ctx.fillStyle = 'yellow';
+            bullets.forEach(bullet => {
+                ctx.beginPath();
+                ctx.arc(bullet.x, bullet.y, bullet.size, 0, Math.PI * 2);
+                ctx.fill();
+            });
+
+            // Draw player
+            ctx.fillStyle = player.visible ? player.color : `rgba(${player.color === 'blue' ? '0,0,255' : '255,255,0'}, 0.5)`;
+            ctx.beginPath();
+            ctx.arc(player.x, player.y, player.size / 2, 0, Math.PI * 2);
+            ctx.fill();
+
+            // Draw shield if active
+            if (player.shielded) {
+                ctx.strokeStyle = 'cyan';
+                ctx.lineWidth = 3;
+                ctx.beginPath();
+                ctx.arc(player.x, player.y, player.size / 2 + 5, 0, Math.PI * 2);
+                ctx.stroke();
+            }
+
+            ctx.restore();
+
+            // Draw player health bar (fixed position on screen)
+            ctx.fillStyle = 'red';
+            ctx.fillRect(10, 10, 200, 20);
+            ctx.fillStyle = 'green';
+            ctx.fillRect(10, 10, player.health * 2, 20);
+            ctx.strokeStyle = 'black';
+            ctx.strokeRect(10, 10, 200, 20);
+
+            // Draw ability cooldowns
+            player.abilities.forEach((ability, index) => {
+                const cooldownWidth = 50;
+                const cooldownHeight = 10;
+                const x = 10;
+                const y = 40 + index * 20;
+                const cooldownProgress = Math.min(1, (Date.now() - ability.lastUsed) / ability.cooldown);
+
+                ctx.fillStyle = 'gray';
+                ctx.fillRect(x, y, cooldownWidth, cooldownHeight);
+                ctx.fillStyle = 'blue';
+                ctx.fillRect(x, y, cooldownWidth * cooldownProgress, cooldownHeight);
+                ctx.strokeStyle = 'black';
+                ctx.strokeRect(x, y, cooldownWidth, cooldownHeight);
+
+                ctx.fillStyle = 'black';
+                ctx.font = '12px Arial';
+                ctx.fillText(ability.name, x + cooldownWidth + 5, y + cooldownHeight);
+            });
+
+            // Draw mini-map
+            let miniMapSize = 150;
+            let miniMapScale = miniMapSize / Math.max(mapWidth, mapHeight);
+            ctx.fillStyle = 'rgba(0, 0, 0, 0.5)';
+            ctx.fillRect(canvas.width - miniMapSize - 10, 10, miniMapSize, miniMapSize);
+            ctx.fillStyle = 'rgba(0, 128, 0, 0.5)';
+            grassAreas.forEach(grass => {
+                ctx.fillRect(
+                    canvas.width - miniMapSize - 10 + grass.x * miniMapScale, 
+                    10 + grass.y * miniMapScale, 
+                    grass.width * miniMapScale, 
+                    grass.height * miniMapScale
+                );
+            });
+            ctx.fillStyle = player.color;
+            ctx.fillRect(canvas.width - miniMapSize - 10 + player.x * miniMapScale, 10 + player.y * miniMapScale, 4, 4);
+            ctx.fillStyle = 'red';
+            enemies.forEach(enemy => {
+                ctx.fillRect(canvas.width - miniMapSize - 10 + enemy.x * miniMapScale, 10 + enemy.y * miniMapScale, 2, 2);
+            });
+
+            // Draw game over screen
+            if (gameOver) {
+                ctx.fillStyle = 'rgba(0, 0, 0, 0.7)';
+                ctx.fillRect(0, 0, canvas.width, canvas.height);
+                ctx.fillStyle = 'white';
+                ctx.font = '48px Arial';
+                ctx.textAlign = 'center';
+                ctx.fillText('Game Over', canvas.width / 2, canvas.height / 2);
+                ctx.font = '24px Arial';
+                ctx.fillText('Click to restart', canvas.width / 2, canvas.height / 2 + 50);
+            }
+
+            // Display "Can't shoot in grass" message
+            if (isPlayerInGrass()) {
+                ctx.fillStyle = 'white';
+                ctx.font = '24px Arial';
+                ctx.textAlign = 'center';
+                ctx.fillText("Can't shoot in grass", canvas.width / 2, canvas.height - 30);
+            }
+        }
+
+        // Start the game when the page loads
+        window.onload = init;
+    </script>
+</body>
+</html>
