@@ -55,6 +55,33 @@
         .footer a:hover {
             color: #9333ea;
         }
+        .video-container {
+            margin-top: 20px;
+        }
+        .video {
+            display: flex;
+            align-items: center;
+            margin-bottom: 20px;
+            background-color: white;
+            padding: 10px;
+            border-radius: 8px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+        .video img {
+            max-width: 150px;
+            border-radius: 8px;
+            margin-right: 20px;
+        }
+        .video a {
+            color: #6b46c1;
+            font-size: 18px;
+            font-weight: bold;
+            text-decoration: none;
+            transition: color 0.3s;
+        }
+        .video a:hover {
+            color: #38b2ac;
+        }
     </style>
 </head>
 <body class="flex items-center justify-center min-h-screen">
@@ -78,12 +105,9 @@
                 <li>
                     <a href="Sam/index.html" class="student-button">Sam</a>
                 </li>
-				
-				<li>
+                <li>
                     <a href="Daniel/index.html" class="student-button">Daniel</a>
                 </li>
-				
-				
             </ul>
             <h2 class="text-2xl font-semibold mt-8 mb-4">Restaurant Sites:</h2>
             <ul>
@@ -100,19 +124,26 @@
                     <a href="Sam/res.html" class="student-button">Sam</a>
                 </li>
             </ul>
-			
-			<h2 class="text-2xl font-semibold mt-8 mb-4">Game Sites:</h2>
+            <h2 class="text-2xl font-semibold mt-8 mb-4">Game Sites:</h2>
             <ul>
                 <li>
                     <a href="games/brawl.html" class="student-button">Brawl Stars Game (Peter & Evelyn)</a>
                 </li>
                 <li>
-                    <a href="games/flight.html" class="student-button">Flight Shooter (Sam & Michael)</a>
+                    <a href="games/flight.html" class="student-button">Flight Shooter (Sam & Peter)</a>
                 </li>
-                
             </ul>
-			
-			
+            <h2 class="text-2xl font-semibold mt-8 mb-4">YouTube Videos:</h2>
+            <div class="video-container">
+                <div class="video">
+                    <img src="https://img.youtube.com/vi/UwHZyVkk9No/hqdefault.jpg" alt="Autra Showtime Week 9 Web Dev - Sam & Michael">
+                    <a href="https://youtu.be/UwHZyVkk9No?si=Cg1E-oEo7DV4YxpL" target="_blank">Autra Showtime Week 9 Web Dev - Sam & Michael</a>
+                </div>
+                <div class="video">
+                    <img src="https://img.youtube.com/vi/LjUrtk9Ff7A/hqdefault.jpg" alt="Autra Showtime Week 9 WebDev - Peter & Evelyn">
+                    <a href="https://youtu.be/LjUrtk9Ff7A?si=aaiNNSF-am4QxYCr" target="_blank">Autra Showtime Week 9 WebDev - Peter & Evelyn</a>
+                </div>
+            </div>
         </div>
         <div class="footer">
             <p>Taught by <a href="https://sham-site.netlify.app/" target="_blank">Shamik Dandekar</a></p>
